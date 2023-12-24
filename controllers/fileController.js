@@ -3,9 +3,10 @@ const uuid = require("uuid");
 const path = require("path");
 const {Article} = require("../models/models");
 const fs = require("fs");
+const ApiError = require("../error/ApiError");
 
 class FileController {
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             const {fileType} = req.body;
             const {file} = req.files;
@@ -18,7 +19,7 @@ class FileController {
 
             return res.json({fileName});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 }

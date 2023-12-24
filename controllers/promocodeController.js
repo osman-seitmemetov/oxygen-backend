@@ -1,8 +1,9 @@
 const {Promocode, UserPromocode, Product, CategoryPromocode, Category, CategoryProduct} = require("../models/models");
 const {Op} = require("sequelize");
+const ApiError = require("../error/ApiError");
 
 class PromocodeController {
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             let {title, value, categoriesId} = req.body;
             let promocode = await Promocode.create({title, value});
@@ -11,11 +12,11 @@ class PromocodeController {
 
             return res.json(promocode);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let {limit, page, term} = req.query;
             page = page || 1;
@@ -48,11 +49,11 @@ class PromocodeController {
 
             return res.json(promocodes);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getById(req, res) {
+    async getById(req, res, next) {
         try {
             const {id} = req.params;
             let promocode = await Promocode.findByPk(id);
@@ -71,7 +72,7 @@ class PromocodeController {
 
             return res.json({...promocode.dataValues, categories, categoriesId});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
@@ -94,18 +95,18 @@ class PromocodeController {
     //     }
     // }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             const {id} = req.params;
             let promocode = await Promocode.destroy({where: {id}});
 
             return res.json({message: "Промокод удален"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async edit(req, res) {
+    async edit(req, res, next) {
         try {
             const {id} = req.params;
             const body = req.body;
@@ -126,7 +127,7 @@ class PromocodeController {
             promocode.save();
             return res.json(promocode);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 }

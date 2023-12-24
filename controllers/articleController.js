@@ -3,9 +3,10 @@ const uuid = require("uuid");
 const path = require("path");
 const {Article, Product} = require("../models/models");
 const fs = require("fs");
+const ApiError = require("../error/ApiError");
 
 class ArticleController {
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             let {title, text, date, bannerImg, previewImg} = req.body;
 
@@ -15,11 +16,11 @@ class ArticleController {
 
             return res.json(article);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let {limit, page, term} = req.query;
             page = page || 1;
@@ -35,44 +36,44 @@ class ArticleController {
 
             return res.json(articles);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getOne(req, res) {
+    async getOne(req, res, next) {
         try {
             const {id} = req.params;
             const article = await Article.findOne({where: {id}});
 
             res.json(article);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteAll(req, res) {
+    async deleteAll(req, res, next) {
         try {
             const {id} = req.params;
             let article = await Article.destroy({where: {}});
 
             return res.json({message: "Все статьи удалены"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteOne(req, res) {
+    async deleteOne(req, res, next) {
         try {
             const {id} = req.params;
             let basketProduct = await Article.destroy({where: {id}});
 
             return res.json({message: "Статья удалена"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async edit(req, res) {
+    async edit(req, res, next) {
         try {
             const {id} = req.params;
             const {title, text, date, bannerImg, previewImg} = req.body;
@@ -98,7 +99,7 @@ class ArticleController {
             article.save();
             return res.json(article);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 }

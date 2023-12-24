@@ -3,33 +3,45 @@ const ApiError = require('../error/ApiError');
 const {Op} = require("sequelize");
 
 class FilterOptionController {
-    async create(req, res) {
-        const {title, filterGroupId} = req.body;
-        const filterOption = await FilterOption.create({title, filterGroupId});
-        return res.json(filterOption);
-    }
-
-    async getAll(req, res) {
-        const {term} = req.query;
-        let filterOptions = await FilterOption.findAll();
-
-        if (term) {
-            filterOptions = await FilterOption.findAll({
-                where: {name: {[Op.or]: {[Op.iLike]: `%${term}%`, [Op.substring]: term}}}
-            });
+    async create(req, res, next) {
+        try {
+            const {title, filterGroupId} = req.body;
+            const filterOption = await FilterOption.create({title, filterGroupId});
+            return res.json(filterOption);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
         }
-
-        return res.json(filterOptions);
     }
 
-    async getById(req, res) {
-        const {id} = req.params;
-        let filterOption = await FilterOption.findByPk(id);
+    async getAll(req, res, next) {
+        try {
+            const {term} = req.query;
+            let filterOptions = await FilterOption.findAll();
 
-        return res.json(filterOption);
+            if (term) {
+                filterOptions = await FilterOption.findAll({
+                    where: {name: {[Op.or]: {[Op.iLike]: `%${term}%`, [Op.substring]: term}}}
+                });
+            }
+
+            return res.json(filterOptions);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
     }
 
-    async edit(req, res) {
+    async getById(req, res, next) {
+        try {
+            const {id} = req.params;
+            let filterOption = await FilterOption.findByPk(id);
+
+            return res.json(filterOption);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async edit(req, res, next) {
         try {
             const {title, filterGroupId} = req.body;
             const {id} = req.params;
@@ -41,18 +53,18 @@ class FilterOptionController {
 
             return res.json("Категория успешно изменена");
         } catch (e) {
-
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             const {id} = req.params;
             await FilterOption.destroy({where: {id}});
 
             return res.json("Категория успешно удалена");
         } catch (e) {
-
+            next(ApiError.badRequest(e.message));
         }
     }
 }

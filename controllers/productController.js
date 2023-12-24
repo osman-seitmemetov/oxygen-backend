@@ -82,6 +82,7 @@ class ProductController {
 
             console.log("__parameters__", parameters)
 
+
             let products = await Product.findAll({limit, offset});
 
             if (term) {
@@ -156,6 +157,29 @@ class ProductController {
                 });
             }
 
+            if (parameters) {
+                let sortedProducts = []
+
+                for (const p of parameters) {
+                    console.log("__PP___", p)
+                    const productParameters = await ProductParameter.findAll({where: {parameterId: p.parameterId}})
+
+                    for (const productParameter of productParameters) {
+                        const productParameterValues = await ProductParameterValue.findAll({where: {productParameterId: productParameter.id}})
+
+                        for (const productParameterValue of productParameterValues) {
+                            const value = await Value.findOne({where: {id: productParameterValue.valueId}})
+
+                            if (p.format === 'INPUT') {
+                                if (p.value === value) sortedProducts.push(products.find(product => product.id === productParameter.productId).dataValues);
+                            }
+                        }
+                    }
+                }
+
+                console.log('sortedProducts', sortedProducts)
+            }
+
             return res.json(products);
         } catch (e) {
             next(ApiError.badRequest(e.message));
@@ -163,52 +187,56 @@ class ProductController {
     }
 
     async getById(req, res, next) {
-        const {id} = req.params;
-        const product = await Product.findByPk(id);
-        const productParameters = await ProductParameter.findAll({where: {productId: product.id}});
-        console.log("_1_productParameters__", productParameters);
+        try {
+            const {id} = req.params;
+            const product = await Product.findByPk(id);
+            const productParameters = await ProductParameter.findAll({where: {productId: product.id}});
+            console.log("_1_productParameters__", productParameters);
 
-        let info = [];
+            let info = [];
 
-        for (const productParameter of productParameters) {
-            const parameter = await Parameter.findByPk(productParameter.parameterId);
-            console.log("_2_parameter__", parameter);
-            const productParameterValues = await ProductParameterValue.findAll({where: {productParameterId: productParameter.id}});
-            console.log("_3_productParameterValues__", productParameterValues);
+            for (const productParameter of productParameters) {
+                const parameter = await Parameter.findByPk(productParameter.parameterId);
+                console.log("_2_parameter__", parameter);
+                const productParameterValues = await ProductParameterValue.findAll({where: {productParameterId: productParameter.id}});
+                console.log("_3_productParameterValues__", productParameterValues);
 
-            let valueIds = [];
-            let valueId = null;
-            let value = null;
+                let valueIds = [];
+                let valueId = null;
+                let value = null;
 
-            if (parameter.format === "CHECKBOX") {
-                console.log("CHECKBOX");
-                for (const productParameterValue of productParameterValues) {
-                    const values = await Value.findAll({where: {id: productParameterValue.valueId}});
-                    values.forEach(value => {
-                        console.log("__valueId__", value.id);
-                        return valueIds.push(value.id)
-                    });
+                if (parameter.format === "CHECKBOX") {
+                    console.log("CHECKBOX");
+                    for (const productParameterValue of productParameterValues) {
+                        const values = await Value.findAll({where: {id: productParameterValue.valueId}});
+                        values.forEach(value => {
+                            console.log("__valueId__", value.id);
+                            return valueIds.push(value.id)
+                        });
+                    }
+
+                } else if (parameter.format === "RADIO") {
+                    console.log("RADIO");
+                    if (productParameterValues[0]) {
+                        const val = await Value.findOne({where: {id: productParameterValues[0].valueId}});
+                        valueId = String(val.id);
+                    }
+
+                } else if (parameter.format === "INPUT") {
+                    console.log("INPUT");
+                    if (productParameterValues[0]) {
+                        const val = await Value.findByPk(productParameterValues[0].valueId);
+                        value = val.type === "COLOR" ? val.value : {value: val.value};
+                    }
                 }
 
-            } else if (parameter.format === "RADIO") {
-                console.log("RADIO");
-                if (productParameterValues[0]) {
-                    const val = await Value.findOne({where: {id: productParameterValues[0].valueId}});
-                    valueId = String(val.id);
-                }
-
-            } else if (parameter.format === "INPUT") {
-                console.log("INPUT");
-                if (productParameterValues[0]) {
-                    const val = await Value.findByPk(productParameterValues[0].valueId);
-                    value = val.type === "COLOR" ? val.value : {value: val.value};
-                }
+                info.push({parameterId: parameter.id, valueIds, valueId, value});
             }
 
-            info.push({parameterId: parameter.id, valueIds, valueId, value});
+            return res.json({...product.dataValues, info});
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
         }
-
-        return res.json({...product.dataValues, info});
     }
 
     async edit(req, res, next) {
@@ -239,7 +267,7 @@ class ProductController {
             if (isDiscount !== null) product.isDiscount = isDiscount;
             if (newPrice) product.newPrice = newPrice;
             if (name) product.name = name;
-            if (price) product.price = price;
+            if (price) product.price = Number(price);
             if (count) product.count = count;
             if (description) product.description = description;
             if (categoryId) product.categoryId = categoryId;
@@ -250,9 +278,9 @@ class ProductController {
 
             for (const productParameter of productParameters) {
                 const productParameterValue = await ProductParameterValue.findOne({where: {productParameterId: productParameter.id}});
-                if(productParameterValue) {
+                if (productParameterValue) {
                     const value = await Value.findOne({where: {id: productParameterValue.valueId}});
-                    if(!value.parameterId) await value.destroy();
+                    if (!value.parameterId) await value.destroy();
                     await productParameterValue.destroy();
                 }
             }
@@ -317,9 +345,9 @@ class ProductController {
 
             for (const productParameter of productParameters) {
                 const productParameterValue = await ProductParameterValue.findOne({where: {productParameterId: productParameter.id}});
-                if(productParameterValue) {
+                if (productParameterValue) {
                     const value = await Value.findOne({where: {id: productParameterValue.valueId}});
-                    if(!value.parameterId) await value.destroy();
+                    if (!value.parameterId) await value.destroy();
                     await productParameterValue.destroy();
                 }
             }

@@ -7,7 +7,7 @@ const {Sequelize} = require("sequelize");
 const Op = Sequelize.Op;
 
 class ProductController {
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let {limit, page, term} = req.query;
             page = page || 1;
@@ -34,7 +34,7 @@ class ProductController {
 
             return res.json(items);
         } catch (e) {
-            console.log(e)
+            next(ApiError.badRequest(e.message));
         }
     }
 }

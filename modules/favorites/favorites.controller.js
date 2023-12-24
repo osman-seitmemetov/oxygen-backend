@@ -1,43 +1,20 @@
-const {Basket, Product, ProductInfo, BasketProduct} = require("../models/models");
+const {Basket, Product, ProductInfo, BasketProduct, Favorites, FavoritesProduct} = require("../../models/models");
 const {DataTypes} = require("sequelize");
-const ApiError = require("../error/ApiError");
 
 
-class BasketController {
-    ///////
-    async createBasketProduct(req, res, next) {
+class FavoritesController {
+    async getFavorites(req, res) {
         try {
             const {id} = req.user;
-            let {count, productId} = req.body;
-
-            const basket = await Basket.findOne({where: {userId: id}})
-
-            let basketProduct = await BasketProduct.create({
-                count,
-                basketId: basket.id,
-                productId
-            });
-
-            return res.json(basketProduct);
-        } catch (e) {
-            next(ApiError.badRequest(e.message));
-        }
-    }
-
-    ////////
-
-    async getBasket(req, res, next) {
-        try {
-            const {id} = req.user;
-            let basket = await Basket.findOne({where: {userId: id}});
+            let favorites = await Favorites.findOne({where: {userId: id}});
             const items = [];
 
-            const basketProducts = await BasketProduct.findAll({where: {basketId: basket.id},});
+            const favoritesProducts = await FavoritesProduct.findAll({where: {favoriteId: favorites.id},});
 
-            for (const basketProduct of basketProducts) {
-                const product = await Product.findByPk(basketProduct.productId);
+            for (const favoritesProduct of favoritesProducts) {
+                const product = await Product.findByPk(favoritesProduct.productId);
 
-                items.push({id: basketProduct.id, product, count: basketProduct.count});
+                items.push({id: favoritesProduct.id, product});
             }
 
             const sortedItems = items.sort((a, b) => {
@@ -50,42 +27,42 @@ class BasketController {
                 return 0;
             })
 
-            res.json({...basket.dataValues, items: sortedItems});
+            res.json({...favorites.dataValues, items: sortedItems});
         } catch (e) {
-            next(ApiError.badRequest(e.message));
+            console.log(e)
         }
     }
 
-    async addToBasket(req, res, next) {
+    async addToFavorites(req, res) {
         try {
             const {id} = req.user;
-            let basket = await Basket.findOne({where: {userId: id}});
+            let favorites = await Favorites.findOne({where: {userId: id}});
             const {productId} = req.body;
 
-            const basketProduct = await BasketProduct.create({basketId: basket.id, productId});
+            const favoritesProduct = await FavoritesProduct.create({favoriteId: favorites.id, productId});
             const product = await Product.findByPk(productId);
 
-            res.json({id: basketProduct.id, count: basketProduct.count, product, productId: product.id});
+            res.json({id: favoritesProduct.id, product});
         } catch (e) {
-            next(ApiError.badRequest(e.message));
+            console.log(e)
         }
     }
 
-    async deleteFromBasket(req, res, next) {
+    async deleteFromFavorites(req, res) {
         try {
             const {id} = req.user;
-            let basket = await Basket.findOne({where: {userId: id}});
+            let favorites = await Favorites.findOne({where: {userId: id}});
             const {productId} = req.body;
 
-            await BasketProduct.destroy({where: {basketId: basket.id, productId}});
+            await FavoritesProduct.destroy({where: {favoriteId: favorites.id, productId}});
 
             res.json("Успешно удалено");
         } catch (e) {
-            next(ApiError.badRequest(e.message));
+            console.log(e)
         }
     }
 
-    async deleteAll(req, res, next) {
+    async deleteAll(req, res) {
         try {
             const {id} = req.user;
             const basket = await Basket.findOne({where: {userId: id}})
@@ -93,18 +70,18 @@ class BasketController {
 
             return res.json("Корзина очищена");
         } catch (e) {
-            next(ApiError.badRequest(e.message));
+            console.log(e);
         }
     }
 
-    async deleteOne(req, res, next) {
+    async deleteOne(req, res) {
         const {id} = req.params;
         await BasketProduct.destroy({where: {id}});
 
         return res.json("Товар удален из корзины");
     }
 
-    async changeCount(req, res, next) {
+    async changeCount(req, res) {
         try {
             const {count} = req.body;
             const {id} = req.params;
@@ -119,11 +96,11 @@ class BasketController {
                 return res.json("Укажите поле count");
             }
         } catch (e) {
-            next(ApiError.badRequest(e.message));
+            console.log(e)
         }
     }
 
-    async edit(req, res, next) {
+    async edit(req, res) {
         try {
             const {id} = req.user;
             // const {count} = req.body;
@@ -151,17 +128,17 @@ class BasketController {
 
             return res.json(basket)
         } catch (e) {
-            next(ApiError.badRequest(e.message));
+            console.log(e);
         }
     }
 
-    async editBasketProduct(req, res, next) {
+    async editBasketProduct(req, res) {
         try {
 
         } catch (e) {
-            next(ApiError.badRequest(e.message));
+            console.log(e);
         }
     }
 }
 
-module.exports = new BasketController();
+module.exports = new FavoritesController();

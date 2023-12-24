@@ -4,9 +4,10 @@ const path = require("path");
 const {Article, Order, Product, Notification} = require("../models/models");
 const fs = require("fs");
 const sequelize = require("../db");
+const ApiError = require("../error/ApiError");
 
 class OrderController {
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             let {status, deliveryAddress, requestDate, deliveryDate, orderSum, deliverySum, globalSum, type, userId} = req.body;
 
@@ -18,11 +19,11 @@ class OrderController {
 
             return res.json(order);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let {limit, page, term} = req.query;
             page = page || 1;
@@ -38,53 +39,53 @@ class OrderController {
 
             return res.json(orders);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getByUser(req, res) {
+    async getByUser(req, res, next) {
         try {
             const order = await Order.findAll({where: {userId: req.user.id}});
 
             res.json(order);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getOne(req, res) {
+    async getOne(req, res, next) {
         try {
             const {id} = req.params;
             const order = await Order.findOne({where: {id}, include: [{model: Product, as: 'order_products'}]});
 
             res.json(order);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteAll(req, res) {
+    async deleteAll(req, res, next) {
         try {
             let order = await Order.destroy({where: {}});
 
             return res.json({message: "Все заказы удалены"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteOne(req, res) {
+    async deleteOne(req, res, next) {
         try {
             const {id} = req.params;
             let order = await Order.destroy({where: {id}});
 
             return res.json({message: "Заказ удален"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async edit(req, res) {
+    async edit(req, res, next) {
         try {
             // const {id} = req.params;
             //
@@ -99,7 +100,7 @@ class OrderController {
             // article.save();
             // return res.json(article);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 }

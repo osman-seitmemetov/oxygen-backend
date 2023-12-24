@@ -33,9 +33,17 @@ const BasketProduct = sequelize.define('basket_product', {
     count: {type: DataTypes.INTEGER, defaultValue: 1},
 }, {timestamps: false});
 
+const Favorites = sequelize.define('favorites', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+}, {timestamps: false});
+
+const FavoritesProduct = sequelize.define('favorites_product', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+}, {timestamps: false});
+
 const Product = sequelize.define('product', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    description: {type: DataTypes.STRING, allowNull: false},
+    description: {type: DataTypes.STRING(2000), allowNull: false},
     name: {type: DataTypes.STRING, allowNull: false},
     price: {type: DataTypes.INTEGER, allowNull: false},
     newPrice: {type: DataTypes.INTEGER},
@@ -279,6 +287,9 @@ Token.belongsTo(User);
 User.hasOne(Basket);
 Basket.belongsTo(User);
 
+User.hasOne(Favorites);
+Favorites.belongsTo(User);
+
 User.hasMany(Order);
 Order.belongsTo(User);
 
@@ -309,6 +320,9 @@ FAQItem.belongsTo(FAQGroup);
 Basket.belongsToMany(Product, {through: BasketProduct});
 Product.belongsToMany(Basket, {through: BasketProduct, as: 'products'});
 
+Favorites.belongsToMany(Product, {through: FavoritesProduct});
+Product.belongsToMany(Favorites, {through: FavoritesProduct});
+
 Product.belongsToMany(Parameter, {through: ProductParameter, as: 'info'});
 Parameter.belongsToMany(Product, {through: ProductParameter});
 
@@ -330,5 +344,5 @@ module.exports = {
     Article, Order, FAQGroup, FAQItem, Promocode, OrderProduct, UserPromocode, Brand, FilterGroup,
     FilterOption, CategoryFilterGroup, Parameter, ColorValue, TextValue, BooleanValue, NumberValue, Type,
     TypeParameter, ProductParameterBooleanValue, ProductParameterColorValue, ProductParameterTextValue,
-    ProductParameterNumberValue, TypeBrand, Value, ProductParameterValue
+    ProductParameterNumberValue, TypeBrand, Value, ProductParameterValue, Favorites, FavoritesProduct
 };

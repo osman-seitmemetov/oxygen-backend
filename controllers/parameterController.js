@@ -10,52 +10,60 @@ const getWarningMessage = require("../lib/getWarningMessage");
 
 class ParameterController {
     async create(req, res, next) {
-        const {title, type, format, values} = req.body;
-        const parameter = await Parameter.create({title, type, format});
+        try {
+            const {title, type, format, values} = req.body;
+            const parameter = await Parameter.create({title, type, format});
 
-        values?.length > 0 && values.forEach(value =>
-            Value.create({
-                value: value.title
-                    ? JSON.stringify(value)
-                    : value.value,
-                type: type,
-                parameterId: parameter.id
-            })
-        );
+            values?.length > 0 && values.forEach(value =>
+                Value.create({
+                    value: value.title
+                        ? JSON.stringify(value)
+                        : value.value,
+                    type: type,
+                    parameterId: parameter.id
+                })
+            );
 
-        return res.json({...parameter.dataValues, values});
+            return res.json({...parameter.dataValues, values});
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
     }
 
-    async getAll(req, res) {
-        const {term} = req.query;
-        let parameterModels = await Parameter.findAll();
+    async getAll(req, res, next) {
+        try {
+            const {term} = req.query;
+            let parameterModels = await Parameter.findAll();
 
-        if (term) {
-            parameterModels = await Parameter.findAll({
-                where: {title: {[Op.or]: {[Op.iLike]: `%${term}%`, [Op.substring]: term}}}
-            });
-        }
-
-        let parameters = [];
-
-        for (const parameterModel of parameterModels) {
-            const values = await Value.findAll({where: {parameterId: parameterModel.id}});
-
-            parameters.push({...parameterModel.dataValues, values})
-        }
-
-        return res.json(parameters.sort((a, b) => {
-            if (a.title.toLowerCase() < b.title.toLowerCase()) {
-                return -1;
+            if (term) {
+                parameterModels = await Parameter.findAll({
+                    where: {title: {[Op.or]: {[Op.iLike]: `%${term}%`, [Op.substring]: term}}}
+                });
             }
-            if (a.title.toLowerCase() > b.title.toLowerCase()) {
-                return 1;
+
+            let parameters = [];
+
+            for (const parameterModel of parameterModels) {
+                const values = await Value.findAll({where: {parameterId: parameterModel.id}});
+
+                parameters.push({...parameterModel.dataValues, values})
             }
-            return 0;
-        }));
+
+            return res.json(parameters.sort((a, b) => {
+                if (a.title.toLowerCase() < b.title.toLowerCase()) {
+                    return -1;
+                }
+                if (a.title.toLowerCase() > b.title.toLowerCase()) {
+                    return 1;
+                }
+                return 0;
+            }));
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
     }
 
-    async getAllByTypeId(req, res) {
+    async getAllByTypeId(req, res, next) {
         try {
             const {id} = req.params;
 
@@ -86,30 +94,34 @@ class ParameterController {
                 }));
             }
         } catch (e) {
-            console.log(e)
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getById(req, res) {
-        const {id} = req.params;
-        let parameter = await Parameter.findByPk(id);
-        const values = await Value.findAll({where: {parameterId: parameter.id}});
+    async getById(req, res, next) {
+        try {
+            const {id} = req.params;
+            let parameter = await Parameter.findByPk(id);
+            const values = await Value.findAll({where: {parameterId: parameter.id}});
 
-        if (parameter.type === "COLOR") {
-            // console.log("__WORK__");
-            let parsedValues = [];
-            values.forEach(value => parsedValues.push({
-                ...value.dataValues,
-                title: JSON.parse(value.value).title,
-                value: JSON.parse(value.value).value
-            }));
-            return res.json({...parameter.dataValues, values: parsedValues});
+            if (parameter.type === "COLOR") {
+                // console.log("__WORK__");
+                let parsedValues = [];
+                values.forEach(value => parsedValues.push({
+                    ...value.dataValues,
+                    title: JSON.parse(value.value).title,
+                    value: JSON.parse(value.value).value
+                }));
+                return res.json({...parameter.dataValues, values: parsedValues});
+            }
+
+            return res.json({...parameter.dataValues, values});
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
         }
-
-        return res.json({...parameter.dataValues, values});
     }
 
-    async edit(req, res) {
+    async edit(req, res, next) {
         try {
             const {values} = req.body;
             const {id} = req.params;
@@ -153,11 +165,11 @@ class ParameterController {
 
             return res.json(getSuccessMessage("Характеристика успешно изменена"));
         } catch (e) {
-            console.log(e)
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             const {id} = req.params;
 
@@ -173,7 +185,7 @@ class ParameterController {
 
             return res.json(getSuccessMessage("Характеристика успешно удалена"));
         } catch (e) {
-            console.log(e)
+            next(ApiError.badRequest(e.message));
         }
     }
 }

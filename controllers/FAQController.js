@@ -3,31 +3,32 @@ const path = require("path");
 const {FAQGroup, FAQItem, ProductInfo, Category} = require("../models/models");
 const fs = require("fs");
 const {Op} = require("sequelize");
+const ApiError = require("../error/ApiError");
 
 class FAQController {
-    async createGroup(req, res) {
+    async createGroup(req, res, next) {
         try {
             let {title} = req.body;
             let faq_group = await FAQGroup.create({title});
 
             return res.json(faq_group);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async createItem(req, res) {
+    async createItem(req, res, next) {
         try {
             let {title, text} = req.body;
             let faq_item = await FAQItem.create({title, text});
 
             return res.json(faq_item);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let {limit, page, term} = req.query;
             page = page || 1;
@@ -43,44 +44,44 @@ class FAQController {
 
             return res.json(faq_groups);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getOne(req, res) {
+    async getOne(req, res, next) {
         try {
             const {id} = req.params;
             const faq_group = await FAQGroup.findOne({where: {id}, include: [{model: FAQItem, as: 'faq_items'}]});
 
             res.json(faq_group);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteGroup(req, res) {
+    async deleteGroup(req, res, next) {
         try {
             const {id} = req.params;
             let faq_group = await FAQGroup.destroy({where: {id}});
 
             return res.json({message: "Группа вопросов удалена"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteItem(req, res) {
+    async deleteItem(req, res, next) {
         try {
             const {id} = req.params;
             let faq_item = await FAQItem.destroy({where: {id}});
 
             return res.json({message: "Вопрос удален"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async editGroup(req, res) {
+    async editGroup(req, res, next) {
         try {
             const {id} = req.params;
             const {title} = req.body;
@@ -90,11 +91,11 @@ class FAQController {
             faq_group.save();
             return res.json(faq_group);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async editItem(req, res) {
+    async editItem(req, res, next) {
         try {
             const {id} = req.params;
             const body = req.body;
@@ -108,7 +109,7 @@ class FAQController {
             faq_item.save();
             return res.json(faq_item);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 }

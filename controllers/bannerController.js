@@ -3,20 +3,21 @@ const path = require("path");
 const {Banner, Article} = require("../models/models");
 const fs = require("fs");
 const {Op} = require("sequelize");
+const ApiError = require("../error/ApiError");
 
 class BannerController {
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             const {img, title, text, link, color} = req.body;
             let banner = await Banner.create({img, title, text, link, color});
 
             return res.json(banner);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let {limit, page} = req.query;
             page = page || 1;
@@ -26,43 +27,43 @@ class BannerController {
 
             return res.json(banners);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async getById(req, res) {
+    async getById(req, res, next) {
         try {
             const {id} = req.params;
             let banner = await Banner.findByPk(id);
 
             return res.json(banner);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteAll(req, res) {
+    async deleteAll(req, res, next) {
         try {
             await Banner.destroy();
 
             return res.json({message: "Все баннеры удалены"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async deleteOne(req, res) {
+    async deleteOne(req, res, next) {
         try {
             const {id} = req.params;
             let banner = await Banner.destroy({where: {id}});
 
             return res.json({message: "Баннер удален"});
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async edit(req, res) {
+    async edit(req, res, next) {
         try {
             const {id} = req.params;
             const {img, title, text, link, color} = req.body;
@@ -80,7 +81,7 @@ class BannerController {
             banner.save();
             return res.json(banner);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 }

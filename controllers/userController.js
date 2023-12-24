@@ -90,7 +90,8 @@ class UserController {
         }
     }
 
-    async editProfile(req, res) {
+    async editProfile(req, res, next) {
+        console.log('__REQ__', req)
         try {
             const body = req.body;
 
@@ -107,11 +108,11 @@ class UserController {
 
             return res.json(user);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async editUser(req, res) {
+    async editUser(req, res, next) {
         try {
             const {id} = req.params;
             const body = req.body;
@@ -129,18 +130,18 @@ class UserController {
 
             return res.json(user);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             const {id} = req.params;
 
             const user = await User.destroy({where: {id: req.user.id}});
             return res.json("Профиль удален");
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 
@@ -158,7 +159,7 @@ class UserController {
     //     }
     // }
 
-    async getPromocodes(req, res) {
+    async getPromocodes(req, res, next) {
         try {
             const id = req.user.id;
             const promocodes = [];
@@ -186,7 +187,7 @@ class UserController {
 
             return res.json(promocodes);
         } catch (e) {
-            console.log(e);
+            next(ApiError.badRequest(e.message));
         }
     }
 }
