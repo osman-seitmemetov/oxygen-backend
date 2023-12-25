@@ -8,8 +8,8 @@ const {Op} = require("sequelize");
 class CategoryController {
     async create(req, res, next) {
         try {
-            const {name, description, icon, filterGroupIds, lvl, parentId, img} = req.body;
-            const category = await Category.create({name, description, icon, lvl, parentId, img});
+            const {name, description, icon, filterGroupIds, lvl, parentId, img, order, inCatalog} = req.body;
+            const category = await Category.create({name, description, icon, lvl, parentId, img, order, inCatalog});
             filterGroupIds.forEach(filterGroupId => CategoryFilterGroup.create({
                 filterGroupId,
                 categoryId: category.id
@@ -157,7 +157,7 @@ class CategoryController {
 
     async edit(req, res, next) {
         try {
-            const {name, description, icon, filterGroupIds, lvl, parentId, img} = req.body;
+            const {name, description, icon, filterGroupIds, lvl, parentId, img, order, inCatalog} = req.body;
             const {id} = req.params;
 
             let category = await Category.findByPk(id);
@@ -167,6 +167,8 @@ class CategoryController {
             category.lvl = lvl;
             category.parentId = parentId;
             category.img = img;
+            category.order = order;
+            category.inCatalog = inCatalog;
             await category.save();
 
             await CategoryFilterGroup.destroy({where: {categoryId: category.id}});
@@ -188,6 +190,29 @@ class CategoryController {
             await Category.destroy({where: {id}});
 
             return res.json("Категория успешно удалена");
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async getCatalog(req, res, next) {
+        try {
+            const categoriesFirstLevel = await Category.findAll({where: {lvl: 1}});
+
+            const catalog = []
+
+            for (const categoryFirstLevel of categoriesFirstLevel) {
+                const children = [];
+                const categoriesSecondLevel = await Category.findAll({where: {parentId: categoryFirstLevel.id}});
+
+                for (const categorySecondLevel of categoriesSecondLevel) {
+                    const categoriesThirdLevel = await Category.findAll({where: {parentId: categorySecondLevel.id}});
+                    children.push(categorySecondLevel, categoriesThirdLevel)
+                }
+                catalog.push({parent: categoryFirstLevel, children})
+            }
+
+            return res.json(catalog);
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
