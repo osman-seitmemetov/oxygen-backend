@@ -237,7 +237,7 @@ class CategoryController {
                 })
             }
 
-            return res.json(catalog);
+            return res.json(catalog.sort((a, b) => b.parent.name.localeCompare(a.parent.name)));
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
