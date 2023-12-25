@@ -133,7 +133,9 @@ const Category = sequelize.define('category', {
     description: {type: DataTypes.STRING(1500), allowNull: false},
     icon: {type: DataTypes.STRING},
     img: {type: DataTypes.STRING},
-    lvl: {type: DataTypes.INTEGER, allowNull: false}
+    lvl: {type: DataTypes.INTEGER, allowNull: false},
+    inCatalog: {type: DataTypes.BOOLEAN, defaultValue: false},
+    order: {type: DataTypes.INTEGER, defaultValue: null}
 }, {timestamps: false});
 
 const Brand = sequelize.define('brand', {
