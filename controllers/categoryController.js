@@ -168,7 +168,7 @@ class CategoryController {
             category.parentId = parentId;
             category.img = img;
             category.order = order;
-            category.inCatalog = inCatalog;
+            category.inCatalog = Boolean(inCatalog);
             await category.save();
 
             await CategoryFilterGroup.destroy({where: {categoryId: category.id}});
