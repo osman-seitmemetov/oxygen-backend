@@ -225,9 +225,7 @@ class CategoryController {
                         name: c.name,
                         img: c.img,
                         order: c.order
-                    }))
-                        .sort((a, b) => Number(a.order) - Number(b.order))
-                        .sort((a, b) => Number(a.order) - Number(b.order)))
+                    })))
                 }
 
                 catalog.push({
@@ -235,7 +233,7 @@ class CategoryController {
                         id: categoryFirstLevel.id,
                         name: categoryFirstLevel.name,
                         img: categoryFirstLevel.img
-                    }, children
+                    }, children: children.sort((a, b) => Number(a.order) - Number(b.order))
                 })
             }
 
