@@ -206,10 +206,43 @@ class CategoryController {
                 const categoriesSecondLevel = await Category.findAll({where: {parentId: categoryFirstLevel.id}});
 
                 for (const categorySecondLevel of categoriesSecondLevel) {
-                    const categoriesThirdLevel = await Category.findAll({where: {parentId: categorySecondLevel.id}});
-                    children.push(categorySecondLevel, ...categoriesThirdLevel)
+                    const categoriesThirdLevel = await Category.findAll({
+                        where: {
+                            parentId: categorySecondLevel.id,
+                            inCatalog: true
+                        }
+                    });
+
+                    if (categorySecondLevel.inCatalog) children.push({
+                        id: categorySecondLevel.id,
+                        name: categorySecondLevel.name,
+                        img: categorySecondLevel.img,
+                        order: categorySecondLevel.order
+                    })
+
+                    children.push(...categoriesThirdLevel.map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        img: c.img,
+                        order: c.order
+                    })).sort((a, b) => {
+                        if (a.order < b.order) {
+                            return -1;
+                        }
+                        if (a.order > b.order) {
+                            return 1;
+                        }
+                        return 0;
+                    }))
                 }
-                catalog.push({parent: categoryFirstLevel, children})
+
+                catalog.push({
+                    parent: {
+                        id: categoryFirstLevel.id,
+                        name: categoryFirstLevel.name,
+                        img: categoryFirstLevel.img
+                    }, children
+                })
             }
 
             return res.json(catalog);
