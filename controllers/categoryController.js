@@ -225,7 +225,7 @@ class CategoryController {
                         name: c.name,
                         img: c.img,
                         order: c.order
-                    })).sort((a, b) => b.order - a.order))
+                    })).sort((a, b) => Number(a.order) - Number(b.order)))
                 }
 
                 catalog.push({
