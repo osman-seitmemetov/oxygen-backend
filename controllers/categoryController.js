@@ -197,7 +197,7 @@ class CategoryController {
 
     async getCatalog(req, res, next) {
         try {
-            const categoriesFirstLevel = await Category.findAll({where: {lvl: 1}});
+            const categoriesFirstLevel = await Category.findAll({where: {parentId: null}});
 
             const catalog = []
 
