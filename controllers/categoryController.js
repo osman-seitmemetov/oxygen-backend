@@ -207,7 +207,7 @@ class CategoryController {
 
                 for (const categorySecondLevel of categoriesSecondLevel) {
                     const categoriesThirdLevel = await Category.findAll({where: {parentId: categorySecondLevel.id}});
-                    children.push(categorySecondLevel, categoriesThirdLevel)
+                    children.push(categorySecondLevel, ...categoriesThirdLevel)
                 }
                 catalog.push({parent: categoryFirstLevel, children})
             }
