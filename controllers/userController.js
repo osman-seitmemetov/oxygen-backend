@@ -16,8 +16,8 @@ class UserController {
             if (!errors.isEmpty()) {
                 return next(ApiError.BadRequest('Ошибка при валидации', errors.array()));
             }
-            const {email, password, phone, name, lastName, bornDate, gender} = req.body;
-            const userData = await userService.registration(email, password, phone, name, lastName, bornDate, gender);
+            const {email, password, phone, firstname, lastname, birthday, gender} = req.body;
+            const userData = await userService.registration(email, password, phone, firstname, lastname, birthday, gender);
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
 
             await Basket.create({userId: userData.user.id})

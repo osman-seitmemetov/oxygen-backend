@@ -5,11 +5,10 @@ const tokenService = require('./token-service');
 const UserDto = require('../dtos/user-dto');
 const uuid = require('uuid');
 const ApiError = require('../error/api-error');
-const BasketService = require('../service/BasketService');
 const {Op} = require("sequelize");
 
 class UserService {
-    async registration(email, password, phone, name, lastName, bornDate, gender) {
+    async registration(email, password, phone, firstname, lastname, birthday, gender) {
         const candidate = await User.findOne({
             where: {email}
         });
@@ -25,15 +24,13 @@ class UserService {
             password: hashPassword,
             activationLink,
             phone,
-            name,
-            lastName,
-            bornDate,
+            firstname,
+            lastname,
+            birthday,
             gender
         });
 
-        const basket = await BasketService.create(user.id);
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`);
-
 
         const userDto = new UserDto(user); // id, email, isActivated
         const tokens = tokenService.generateTokens({...userDto});
