@@ -186,6 +186,30 @@ class ProductController {
         }
     }
 
+    async getMain(req, res, next) {
+        try {
+            let products = await Product.findAll();
+            let sales = []
+            let bestsellers = products.sort((a, b) => Number(b.buyCount) - Number(a.buyCount)).slice(0, 8)
+            let news = products.slice(0, 8)
+
+            for (const product of products) {
+                if (product.isDiscount) {
+                    const salePercent = (product.newPrice * 100) / product.price;
+                    sales.push({...product, salePercent})
+                }
+            }
+
+            return res.json({
+                sales: sales.sort((a, b) => Number(b.salePercent) - Number(a.salePercent)).slice(0, 8),
+                bestsellers,
+                news
+            });
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
+    }
+
     async getById(req, res, next) {
         try {
             const {id} = req.params;
