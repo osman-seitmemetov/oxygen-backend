@@ -17,13 +17,13 @@ class ProductController {
         try {
             let {
                 name, description, price, count, categoryId, info, isDiscount, newPrice,
-                img, typeId, brandId
+                img, typeId, brandId, buyCount
             } = req.body;
 
             const product = await Product.create({
                 name, price: Number(price), count: Number(count),
                 img, description, newPrice: newPrice ? Number(newPrice) : null, isDiscount, categoryId, typeId,
-                brandId
+                brandId, buyCount
             });
 
             if (info && info.length !== 0) {
@@ -245,17 +245,8 @@ class ProductController {
             let product = await Product.findOne({where: {id}});
 
             let {
-                name,
-                description,
-                price,
-                count,
-                categoryId,
-                info,
-                isDiscount,
-                newPrice,
-                img,
-                typeId,
-                brandId
+                name, description, price, count, categoryId, info, isDiscount, newPrice,
+                img, typeId, brandId, buyCount
             } = req.body;
 
             if (img && img !== product.img) {
@@ -273,6 +264,7 @@ class ProductController {
             if (categoryId) product.categoryId = categoryId;
             if (typeId) product.typeId = typeId;
             if (brandId) product.brandId = brandId;
+            if (buyCount) product.buyCount = Number(buyCount);
 
             const productParameters = await ProductParameter.findAll({where: {productId: product.id}});
 

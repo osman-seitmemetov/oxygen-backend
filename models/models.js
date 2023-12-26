@@ -50,6 +50,8 @@ const Product = sequelize.define('product', {
     count: {type: DataTypes.INTEGER, allowNull: false},
     isDiscount: {type: DataTypes.BOOLEAN, defaultValue: false},
     img: {type: DataTypes.STRING, allowNull: false},
+    buyCount: {type: DataTypes.INTEGER, allowNull: false},
+    publishDate: {type: DataTypes.DATE, defaultValue: sequelize.literal('CURRENT_TIMESTAMP')}
 }, {timestamps: false});
 
 const Parameter = sequelize.define('parameter', {
@@ -243,8 +245,6 @@ ProductParameter.belongsToMany(Value, {through: ProductParameterValue});
 Value.belongsToMany(ProductParameter, {through: ProductParameterValue});
 
 
-
-
 Parameter.hasOne(ColorValue);
 ColorValue.belongsTo(Parameter);
 
@@ -277,7 +277,6 @@ FilterOption.belongsTo(FilterGroup);
 FilterGroup.belongsToMany(Category, {through: CategoryFilterGroup});
 Category.belongsToMany(FilterGroup, {through: CategoryFilterGroup});
 /////
-
 
 
 User.hasMany(Notification);
@@ -338,7 +337,7 @@ Type.belongsToMany(Parameter, {through: TypeParameter});
 Parameter.belongsToMany(Type, {through: TypeParameter});
 
 (async () => {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({alter: true});
 })();
 
 module.exports = {
