@@ -195,7 +195,7 @@ class ProductController {
 
             for (const product of products) {
                 if (product.isDiscount) {
-                    const salePercent = (product.newPrice * 100) / product.price;
+                    const salePercent =  100 - ((product.newPrice * 100) / product.price);
                     sales.push({...product.dataValues, salePercent})
                 }
             }
