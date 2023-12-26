@@ -190,8 +190,8 @@ class ProductController {
         try {
             let products = await Product.findAll();
             let sales = []
-            let bestsellers = products.sort((a, b) => Number(b.buyCount) - Number(a.buyCount)).slice(0, 8)
-            let news = products.slice(0, 8)
+            let bestsellers = products.sort((a, b) => Number(b.buyCount) - Number(a.buyCount)).slice(0, 6)
+            let news = products.slice(0, 6)
 
             for (const product of products) {
                 if (product.isDiscount) {
@@ -201,7 +201,7 @@ class ProductController {
             }
 
             return res.json({
-                sales: sales.sort((a, b) => Number(b.salePercent) - Number(a.salePercent)).slice(0, 8),
+                sales: sales.sort((a, b) => Number(b.salePercent) - Number(a.salePercent)).slice(0, 6),
                 bestsellers,
                 news
             });
