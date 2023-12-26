@@ -1,7 +1,7 @@
 // const ApiError = require('../error/ApiError');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const {User, Basket, Promocode, CategoryPromocode, UserPromocode, Category} = require('../models/models');
+const {User, Basket, Promocode, CategoryPromocode, UserPromocode, Category, Favorites} = require('../models/models');
 const userService = require('../service/user-service')
 const tokenService = require('../service/token-service')
 const {validationResult} = require('express-validator');
@@ -19,6 +19,9 @@ class UserController {
             const {email, password, phone, name, lastName, bornDate, gender} = req.body;
             const userData = await userService.registration(email, password, phone, name, lastName, bornDate, gender);
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
+
+            await Basket.create({userId: userData.user.id})
+            await Favorites.create({userId: userData.user.id})
 
             return res.json(userData);
         } catch (e) {
