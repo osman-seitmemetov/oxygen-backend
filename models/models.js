@@ -50,7 +50,7 @@ const Product = sequelize.define('product', {
     count: {type: DataTypes.INTEGER, allowNull: false},
     isDiscount: {type: DataTypes.BOOLEAN, defaultValue: false},
     img: {type: DataTypes.STRING, allowNull: false},
-    buyCount: {type: DataTypes.INTEGER, allowNull: false},
+    buyCount: {type: DataTypes.INTEGER, allowNull: true},
     publishDate: {type: DataTypes.DATE, defaultValue: sequelize.literal('CURRENT_TIMESTAMP')}
 }, {timestamps: false});
 
