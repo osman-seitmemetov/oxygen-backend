@@ -1,6 +1,5 @@
 const {
-    Category, CategoryFilterGroup, Product, Type, TypeBrand, Brand, Parameter, TypeParameter, ColorValue,
-    BooleanValue, TextValue, NumberValue, Value
+    Category, CategoryFilterGroup, Product, Type, TypeBrand, Brand, Parameter, TypeParameter, Value
 } = require('../models/models');
 const ApiError = require('../error/ApiError');
 const {Op} = require("sequelize");
@@ -8,14 +7,10 @@ const {Op} = require("sequelize");
 class CategoryController {
     async create(req, res, next) {
         try {
-            const {name, description, icon, filterGroupIds, lvl, parentId, img, order, inCatalog} = req.body;
+            const {name, description, icon, lvl, parentId, img, order, inCatalog} = req.body;
             const category = await Category.create({name, description, icon, lvl, parentId, img, order, inCatalog});
-            filterGroupIds.forEach(filterGroupId => CategoryFilterGroup.create({
-                filterGroupId,
-                categoryId: category.id
-            }))
 
-            return res.json({...category.dataValues, filterGroupIds});
+            return res.json(category);
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
@@ -23,24 +18,24 @@ class CategoryController {
 
     async getAll(req, res, next) {
         try {
-            const {term} = req.query;
-            let categories = await Category.findAll();
+            let {term, limit, page} = req.query;
+            page = page || 1;
+            limit = limit || 10;
+            let offset = page * limit - limit;
+            let categories = await Category.findAll({
+                order: [['name', 'ASC']],
+                limit, offset
+            });
 
             if (term) {
                 categories = await Category.findAll({
-                    where: {name: {[Op.or]: {[Op.iLike]: `%${term}%`, [Op.substring]: term}}}
+                    where: {name: {[Op.or]: {[Op.iLike]: `%${term}%`, [Op.substring]: term}}},
+                    order: [['name', 'ASC']],
+                    limit, offset
                 });
             }
 
-            return res.json([...categories].sort((a, b) => {
-                if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                    return -1;
-                }
-                if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                    return 1;
-                }
-                return 0;
-            }));
+            return res.json(categories)
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
@@ -143,12 +138,8 @@ class CategoryController {
             const {id} = req.params;
             if (id && !isNaN(id)) {
                 let category = await Category.findByPk(id);
-                let filterGroupIds = [];
-                let categoryFilterGroups = CategoryFilterGroup.findAll({where: {categoryId: category.id}});
 
-                (await categoryFilterGroups).forEach(categoryFilterGroup => filterGroupIds.push(categoryFilterGroup.dataValues.filterGroupId))
-
-                return res.json({...category.dataValues, filterGroupIds});
+                return res.json(category);
             }
         } catch (e) {
             next(ApiError.badRequest(e.message));
@@ -157,7 +148,7 @@ class CategoryController {
 
     async edit(req, res, next) {
         try {
-            const {name, description, icon, filterGroupIds, lvl, parentId, img, order, inCatalog} = req.body;
+            const {name, description, icon, lvl, parentId, img, order, inCatalog} = req.body;
             const {id} = req.params;
 
             let category = await Category.findByPk(id);
@@ -170,12 +161,6 @@ class CategoryController {
             category.order = order;
             category.inCatalog = Boolean(inCatalog);
             await category.save();
-
-            await CategoryFilterGroup.destroy({where: {categoryId: category.id}});
-            filterGroupIds.forEach(filterGroupId => CategoryFilterGroup.create({
-                filterGroupId,
-                categoryId: category.id
-            }));
 
             return res.json("Категория успешно изменена");
         } catch (e) {

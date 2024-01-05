@@ -1,6 +1,7 @@
 const Router = require('express');
 const router = new Router();
 const categoryRouter = require('./categoryRouter');
+const catalogGroupRouter = require('./catalogGroupRouter');
 const brandRouter = require('./brandRouter');
 const productRouter = require('./productRouter');
 const userRouter = require('./userRouter');
@@ -14,14 +15,13 @@ const notificationRouter = require('./notificationRouter');
 const promocodeRouter = require('./promocodeRouter');
 const aboutRouter = require('./aboutRouter');
 const fileRouter = require('./fileRouter');
-const filterGroupRouter = require('./filterGroupRouter');
-const filterOptionRouter = require('./filterOptionRouter');
 const parameterRouter = require('./parameterRouter');
 const typeRouter = require('./typeRouter');
 const searchRouter = require('../modules/search/search.router');
 
 router.use('/user', userRouter);
 router.use('/category', categoryRouter);
+router.use('/catalog_groups', catalogGroupRouter);
 router.use('/brand', brandRouter);
 router.use('/type', typeRouter);
 router.use('/product', productRouter);
@@ -35,8 +35,6 @@ router.use('/notification', notificationRouter);
 router.use('/promocode', promocodeRouter);
 router.use('/about', aboutRouter);
 router.use('/upload', fileRouter);
-router.use('/filter_group', filterGroupRouter);
-router.use('/filter_option', filterOptionRouter);
 router.use('/parameter', parameterRouter);
 router.use('/search', searchRouter);
 

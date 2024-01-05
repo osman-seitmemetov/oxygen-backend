@@ -12,6 +12,7 @@ class UserService {
         const candidate = await User.findOne({
             where: {email}
         });
+
         if (candidate) {
             throw ApiError.BadRequest(`Пользователь с почтовым адресом ${email} уже существует`);
         }

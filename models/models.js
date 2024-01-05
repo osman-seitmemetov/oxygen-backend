@@ -116,18 +116,6 @@ const ProductParameterValue = sequelize.define('product_parameter_value', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 }, {timestamps: false});
 
-////////
-const FilterGroup = sequelize.define('filter_group', {
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    title: {type: DataTypes.STRING, allowNull: false}
-});
-
-const FilterOption = sequelize.define('filter_option', {
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    title: {type: DataTypes.STRING, allowNull: false}
-});
-/////////
-
 const Category = sequelize.define('category', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     parentId: {type: DataTypes.INTEGER},
@@ -233,10 +221,23 @@ const TypeBrand = sequelize.define('type_brand', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true}
 }, {timestamps: false});
 
-const CategoryFilterGroup = sequelize.define('category_filter', {
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true}
+const CatalogGroup = sequelize.define('catalog_group', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    title: {type: DataTypes.STRING, allowNull: false},
+    link: {type: DataTypes.STRING(400), allowNull: false},
+    order: {type: DataTypes.INTEGER}
 }, {timestamps: false});
 
+const CatalogItem = sequelize.define('catalog_item', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    title: {type: DataTypes.STRING, allowNull: false},
+    link: {type: DataTypes.STRING(400), allowNull: false},
+    img: {type: DataTypes.STRING, allowNull: false},
+    order: {type: DataTypes.INTEGER}
+}, {timestamps: false});
+
+CatalogGroup.hasMany(CatalogItem);
+CatalogItem.belongsTo(CatalogGroup);
 
 Parameter.hasOne(Value);
 Value.belongsTo(Parameter);
@@ -268,16 +269,6 @@ TextValue.belongsToMany(ProductParameter, {through: ProductParameterTextValue});
 
 ProductParameter.belongsToMany(BooleanValue, {through: ProductParameterBooleanValue});
 BooleanValue.belongsToMany(ProductParameter, {through: ProductParameterBooleanValue});
-
-
-/////
-FilterGroup.hasMany(FilterOption);
-FilterOption.belongsTo(FilterGroup);
-
-FilterGroup.belongsToMany(Category, {through: CategoryFilterGroup});
-Category.belongsToMany(FilterGroup, {through: CategoryFilterGroup});
-/////
-
 
 User.hasMany(Notification);
 Notification.belongsTo(User);
@@ -342,8 +333,8 @@ Parameter.belongsToMany(Type, {through: TypeParameter});
 
 module.exports = {
     User, Token, Basket, About, BasketProduct, Product, Category, ProductParameter, Banner, Notification,
-    Article, Order, FAQGroup, FAQItem, Promocode, OrderProduct, UserPromocode, Brand, FilterGroup,
-    FilterOption, CategoryFilterGroup, Parameter, ColorValue, TextValue, BooleanValue, NumberValue, Type,
+    Article, Order, FAQGroup, FAQItem, Promocode, OrderProduct, UserPromocode, Brand,
+    Parameter, ColorValue, TextValue, BooleanValue, NumberValue, Type, CatalogGroup, CatalogItem,
     TypeParameter, ProductParameterBooleanValue, ProductParameterColorValue, ProductParameterTextValue,
     ProductParameterNumberValue, TypeBrand, Value, ProductParameterValue, Favorites, FavoritesProduct
 };
