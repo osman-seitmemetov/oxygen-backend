@@ -10,7 +10,7 @@ class CatalogGroupController {
             const catalogGroup = await CatalogGroup.create({title, link, order});
 
             catalogItems.forEach(c => CatalogItem.create({
-                title: c.title, link: c.link, img: c.img, order: c.order
+                title: c.title, link: c.link, img: c.img, order: c.order, catalogGroupId: catalogGroup.id
             }))
 
             return res.json(catalogGroup);
@@ -29,14 +29,14 @@ class CatalogGroupController {
             let catalogGroups = []
 
             let catalogGroupModels = await CatalogGroup.findAll({
-                order: [['title', 'ASC']],
+                order: [['order', 'ASC']],
                 limit, offset
             });
 
             if (term) {
                 catalogGroupModels = await CatalogGroup.findAll({
                     where: {name: {[Op.or]: {[Op.iLike]: `%${term}%`, [Op.substring]: term}}},
-                    order: [['title', 'ASC']],
+                    order: [['order', 'ASC']],
                     limit, offset
                 })
             }
@@ -78,7 +78,7 @@ class CatalogGroupController {
             await CatalogItem.destroy({where: {catalogGroupId: catalogGroup.id}})
 
             catalogItems.forEach(c => CatalogItem.create({
-                title: c.title, link: c.link, img: c.img, order: c.order
+                title: c.title, link: c.link, img: c.img, order: c.order, catalogGroupId: catalogGroup.id
             }))
 
             return res.json(getSuccessMessage("Группа элементов каталога успешно изменена"));

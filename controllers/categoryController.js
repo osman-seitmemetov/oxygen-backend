@@ -1,5 +1,5 @@
 const {
-    Category, CategoryFilterGroup, Product, Type, TypeBrand, Brand, Parameter, TypeParameter, Value
+    Category, Type, TypeBrand, Brand, Parameter, TypeParameter, Value
 } = require('../models/models');
 const ApiError = require('../error/ApiError');
 const {Op} = require("sequelize");
@@ -7,8 +7,8 @@ const {Op} = require("sequelize");
 class CategoryController {
     async create(req, res, next) {
         try {
-            const {name, description, icon, lvl, parentId, img, order, inCatalog} = req.body;
-            const category = await Category.create({name, description, icon, lvl, parentId, img, order, inCatalog});
+            const {name, parentId} = req.body;
+            const category = await Category.create({name, parentId});
 
             return res.json(category);
         } catch (e) {
@@ -148,18 +148,12 @@ class CategoryController {
 
     async edit(req, res, next) {
         try {
-            const {name, description, icon, lvl, parentId, img, order, inCatalog} = req.body;
+            const {name, parentId} = req.body;
             const {id} = req.params;
 
             let category = await Category.findByPk(id);
             category.name = name;
-            category.description = description;
-            category.icon = icon;
-            category.lvl = lvl;
             category.parentId = parentId;
-            category.img = img;
-            category.order = order;
-            category.inCatalog = Boolean(inCatalog);
             await category.save();
 
             return res.json("Категория успешно изменена");
@@ -171,58 +165,9 @@ class CategoryController {
     async delete(req, res, next) {
         try {
             const {id} = req.params;
-            console.log("__id__", id)
             await Category.destroy({where: {id}});
 
             return res.json("Категория успешно удалена");
-        } catch (e) {
-            next(ApiError.badRequest(e.message));
-        }
-    }
-
-    async getCatalog(req, res, next) {
-        try {
-            const categoriesFirstLevel = await Category.findAll({where: {parentId: null}});
-
-            const catalog = []
-
-            for (const categoryFirstLevel of categoriesFirstLevel) {
-                const children = [];
-                const categoriesSecondLevel = await Category.findAll({where: {parentId: categoryFirstLevel.id}});
-
-                for (const categorySecondLevel of categoriesSecondLevel) {
-                    const categoriesThirdLevel = await Category.findAll({
-                        where: {
-                            parentId: categorySecondLevel.id,
-                            inCatalog: true
-                        }
-                    });
-
-                    if (categorySecondLevel.inCatalog) children.push({
-                        id: categorySecondLevel.id,
-                        name: categorySecondLevel.name,
-                        img: categorySecondLevel.img,
-                        order: categorySecondLevel.order
-                    })
-
-                    children.push(...categoriesThirdLevel.map(c => ({
-                        id: c.id,
-                        name: c.name,
-                        img: c.img,
-                        order: c.order
-                    })))
-                }
-
-                catalog.push({
-                    parent: {
-                        id: categoryFirstLevel.id,
-                        name: categoryFirstLevel.name,
-                        img: categoryFirstLevel.img
-                    }, children: children.sort((a, b) => Number(a.order) - Number(b.order))
-                })
-            }
-
-            return res.json(catalog.sort((a, b) => b.parent.name.localeCompare(a.parent.name)));
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
